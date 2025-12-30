@@ -13,6 +13,9 @@ import br.com.projeto.personalfocus.treino.comando.CadastrarTreinoCmd;
  * @author teteu
  */
 public class CadastrarTreinoCriadorDeclaracao implements PreparedStatementCreator {
+
+  private static final String COLUNA_ID_TREINO = "id_treino";
+
   private String sql;
   private CadastrarTreinoCmd cmd;
 
@@ -41,7 +44,7 @@ public class CadastrarTreinoCriadorDeclaracao implements PreparedStatementCreato
    */
   @Override
   public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-    PreparedStatement ps = con.prepareStatement(sql, new String[] { "id_treino" });
+    PreparedStatement ps = con.prepareStatement(sql, new String[] { COLUNA_ID_TREINO });
     ps.setString(1, cmd.getDiaSemana().getCodigo());
     ps.setString(2, cmd.getNomeTreino());
     ps.setString(3, cmd.getDescricao());

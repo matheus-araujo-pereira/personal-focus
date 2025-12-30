@@ -27,6 +27,16 @@ import br.com.projeto.personalfocus.treino.dto.DadoTreinoDto;
 @PropertySource("classpath:br/com/projeto/personalfocus/treino/dao/TreinoDao.properties")
 public class TreinoDao {
 
+  private static final String COLUNA_ID_TREINO = "id_treino";
+  private static final String COLUNA_NOME_TREINO = "nome_treino";
+  private static final String COLUNA_DIA_SEMANA = "dia_semana";
+  private static final String COLUNA_DESCRICAO = "descricao";
+  private static final String COLUNA_QTD_EXERCICIOS = "qtd_exercicios";
+  private static final String COLUNA_ID_EXERCICIO = "id_exercicio";
+  private static final String COLUNA_NOME_EXERCICIO = "nome_exercicio";
+  private static final String COLUNA_REPETICOES = "repeticoes";
+  private static final String COLUNA_CARGA_KG = "carga_kg";
+
   @Autowired
   private JdbcTemplate jdbcTemplate;
 
@@ -71,7 +81,7 @@ public class TreinoDao {
   }
 
   /**
-   * Insere uma lista de exercícios vinculados a um treino em lote (não utiliza batch do JDBC, mas itera sobre a lista).
+   * Insere uma lista de exercícios vinculados a um treino em lote.
    *
    * @param idTreino
    *        O ID do treino ao qual os exercícios pertencem.
@@ -95,8 +105,8 @@ public class TreinoDao {
   @Transactional(readOnly = true)
   public List<DadoTreinoDto> listarTreinosPorAluno(long idAluno) {
     return jdbcTemplate.query(sqlListarPorAluno, new Object[] { idAluno },
-        (rs, rowNum) -> new DadoTreinoDto(rs.getLong("id_treino"), rs.getString("nome_treino"),
-            rs.getString("dia_semana"), rs.getString("descricao"), rs.getInt("qtd_exercicios")));
+        (rs, rowNum) -> new DadoTreinoDto(rs.getLong(COLUNA_ID_TREINO), rs.getString(COLUNA_NOME_TREINO),
+            rs.getString(COLUNA_DIA_SEMANA), rs.getString(COLUNA_DESCRICAO), rs.getInt(COLUNA_QTD_EXERCICIOS)));
   }
 
   /**
@@ -109,8 +119,8 @@ public class TreinoDao {
   @Transactional(readOnly = true)
   public List<DadoExercicioDto> listarExerciciosPorTreino(long idTreino) {
     return jdbcTemplate.query(sqlListarExercicios, new Object[] { idTreino },
-        (rs, rowNum) -> new DadoExercicioDto(rs.getLong("id_exercicio"), rs.getString("nome_exercicio"),
-            rs.getString("repeticoes"), rs.getBigDecimal("carga_kg")));
+        (rs, rowNum) -> new DadoExercicioDto(rs.getLong(COLUNA_ID_EXERCICIO), rs.getString(COLUNA_NOME_EXERCICIO),
+            rs.getString(COLUNA_REPETICOES), rs.getBigDecimal(COLUNA_CARGA_KG)));
   }
 
   /**
