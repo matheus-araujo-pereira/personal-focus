@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import br.com.projeto.personalfocus.compartilhado.util.ValidadorUtil;
 import br.com.projeto.personalfocus.usuario.comando.AtualizarUsuarioCmd;
 import br.com.projeto.personalfocus.usuario.comando.CadastrarUsuarioCmd;
 import br.com.projeto.personalfocus.usuario.comando.LoginCmd;
@@ -22,6 +23,25 @@ import br.com.projeto.personalfocus.usuario.dto.UsuarioLogadoDto;
 @Service
 public class UsuarioServico {
 
+  private static final String LABEL_ID_USUARIO = "ID do Usuário";
+  private static final String LABEL_DADOS_CADASTRO = "Dados de cadastro";
+  private static final String LABEL_DADOS_LOGIN = "Dados de login";
+  private static final String LABEL_DADOS_ATUALIZACAO = "Dados de atualização";
+  private static final String LABEL_CPF = "CPF";
+  private static final String LABEL_NOME = "Nome";
+  private static final String LABEL_SENHA = "Senha";
+  private static final String LABEL_DATA_NASCIMENTO = "Data de Nascimento";
+  private static final String LABEL_PERFIL = "Perfil";
+
+  private static final String MSG_SUCESSO_CADASTRO = "Usuário cadastrado com sucesso.";
+  private static final String MSG_SUCESSO_ATUALIZACAO = "Dados do usuário atualizados com sucesso.";
+  private static final String MSG_SUCESSO_EXCLUSAO = "Usuário e todos os seus dados vinculados foram removidos.";
+
+  private static final String MSG_ERRO_CPF_JA_CADASTRADO = "CPF já cadastrado no sistema.";
+  private static final String MSG_ERRO_CREDENCIAIS_INVALIDAS = "CPF ou Senha inválidos.";
+  private static final String MSG_ERRO_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
+  private static final String MSG_ERRO_OP_USUARIO_NAO_ENCONTRADO = "Operação não realizada: Usuário não encontrado.";
+
   @Autowired
   private UsuarioDao usuarioDao;
 
@@ -31,15 +51,15 @@ public class UsuarioServico {
    *
    * @param cmd
    *        Objeto contendo os dados necessários para o cadastro do usuário.
-   * @return Uma mensagem de sucesso contendo o ID do usuário gerado.
+   * @return Uma mensagem de sucesso.
    * @throws IllegalArgumentException
    *         Caso o CPF informado já esteja cadastrado.
    */
   public String cadastrarUsuario(@Valid CadastrarUsuarioCmd cmd) {
     validarCmdCadastrar(cmd);
     validarCpfJaCadastrado(cmd.getCpf());
-    long id = usuarioDao.cadastrarUsuario(cmd);
-    return "Usuário cadastrado com sucesso. ID: " + id;
+    usuarioDao.cadastrarUsuario(cmd);
+    return MSG_SUCESSO_CADASTRO;
   }
 
   /**
@@ -55,7 +75,7 @@ public class UsuarioServico {
   public UsuarioLogadoDto login(@Valid LoginCmd cmd) {
     validarCmdLogin(cmd);
     UsuarioLogadoDto usuario = usuarioDao.autenticar(cmd);
-    Assert.notNull(usuario, "CPF ou Senha inválidos.");
+    Assert.notNull(usuario, MSG_ERRO_CREDENCIAIS_INVALIDAS);
     return usuario;
   }
 
@@ -80,7 +100,7 @@ public class UsuarioServico {
     validarCmdAtualizar(cmd);
     validarExistenciaUsuario(cmd.getIdUsuario());
     usuarioDao.atualizarUsuario(cmd);
-    return "Dados do usuário atualizados com sucesso.";
+    return MSG_SUCESSO_ATUALIZACAO;
   }
 
   /**
@@ -92,10 +112,10 @@ public class UsuarioServico {
    * @return Uma mensagem de confirmação da exclusão.
    */
   public String excluirUsuario(long idUsuario) {
-    validarId(idUsuario);
+    ValidadorUtil.validarIdPositivo(idUsuario, LABEL_ID_USUARIO);
     validarExistenciaUsuario(idUsuario);
     usuarioDao.excluirUsuario(idUsuario);
-    return "Usuário e todos os seus dados vinculados foram removidos.";
+    return MSG_SUCESSO_EXCLUSAO;
   }
 
   /**
@@ -108,55 +128,91 @@ public class UsuarioServico {
    *         Caso o usuário não seja encontrado.
    */
   public DadoUsuarioDto obterPerfil(long idUsuario) {
-    validarId(idUsuario);
+    ValidadorUtil.validarIdPositivo(idUsuario, LABEL_ID_USUARIO);
     DadoUsuarioDto usuario = usuarioDao.getUsuarioPorId(idUsuario);
-    validarUsuario(usuario);
+    validarUsuarioEncontrado(usuario);
     return usuario;
   }
 
+  /**
+   * Verifica se o CPF já existe na base de dados.
+   *
+   * @param cpf
+   *        O CPF a ser verificado.
+   * @throws IllegalArgumentException
+   *         Se o CPF já estiver cadastrado.
+   */
   private void validarCpfJaCadastrado(String cpf) {
     if (usuarioDao.getUsuarioPorCpf(cpf) != null) {
-      throw new IllegalArgumentException("CPF já cadastrado no sistema.");
+      throw new IllegalArgumentException(MSG_ERRO_CPF_JA_CADASTRADO);
     }
   }
 
-  private static void validarId(long id) {
-    if (id <= 0) {
-      throw new IllegalArgumentException("ID de usuário inválido.");
-    }
-  }
-
-  private static void validarUsuario(DadoUsuarioDto usuario) {
-    if (usuario == null) {
-      throw new IllegalArgumentException("Usuário não encontrado.");
-    }
-  }
-
+  /**
+   * Verifica se o usuário existe na base de dados antes de realizar operações de alteração ou exclusão.
+   *
+   * @param idUsuario
+   *        O ID do usuário.
+   * @throws IllegalArgumentException
+   *         Se o usuário não for encontrado.
+   */
   private void validarExistenciaUsuario(long idUsuario) {
     if (usuarioDao.getUsuarioPorId(idUsuario) == null) {
-      throw new IllegalArgumentException("Operação não realizada: Usuário não encontrado.");
+      throw new IllegalArgumentException(MSG_ERRO_OP_USUARIO_NAO_ENCONTRADO);
     }
   }
 
+  /**
+   * Valida se o objeto de usuário retornado pelo banco não é nulo.
+   *
+   * @param usuario
+   *        O DTO do usuário retornado.
+   * @throws IllegalArgumentException
+   *         Se o usuário for nulo.
+   */
+  private static void validarUsuarioEncontrado(DadoUsuarioDto usuario) {
+    if (usuario == null) {
+      throw new IllegalArgumentException(MSG_ERRO_USUARIO_NAO_ENCONTRADO);
+    }
+  }
+
+  /**
+   * Valida os campos obrigatórios do comando de cadastro.
+   *
+   * @param cmd
+   *        O comando a ser validado.
+   */
   private static void validarCmdCadastrar(CadastrarUsuarioCmd cmd) {
-    Assert.notNull(cmd, "Dados de cadastro não podem ser nulos.");
-    Assert.hasText(cmd.getCpf(), "O CPF é obrigatório.");
-    Assert.hasText(cmd.getNome(), "O nome é obrigatório.");
-    Assert.hasText(cmd.getSenha(), "A senha é obrigatória.");
-    Assert.notNull(cmd.getDataNascimento(), "A data de nascimento é obrigatória.");
-    Assert.notNull(cmd.getPerfil(), "O perfil é obrigatório.");
+    ValidadorUtil.validarObjetoNaoNulo(cmd, LABEL_DADOS_CADASTRO);
+    ValidadorUtil.validarTextoObrigatorio(cmd.getCpf(), LABEL_CPF);
+    ValidadorUtil.validarTextoObrigatorio(cmd.getNome(), LABEL_NOME);
+    ValidadorUtil.validarTextoObrigatorio(cmd.getSenha(), LABEL_SENHA);
+    ValidadorUtil.validarObjetoNaoNulo(cmd.getDataNascimento(), LABEL_DATA_NASCIMENTO);
+    ValidadorUtil.validarObjetoNaoNulo(cmd.getPerfil(), LABEL_PERFIL);
   }
 
+  /**
+   * Valida os campos obrigatórios do comando de login.
+   *
+   * @param cmd
+   *        O comando a ser validado.
+   */
   private static void validarCmdLogin(LoginCmd cmd) {
-    Assert.notNull(cmd, "Dados de login não podem ser nulos.");
-    Assert.hasText(cmd.getCpf(), "O CPF é obrigatório para login.");
-    Assert.hasText(cmd.getSenha(), "A senha é obrigatória para login.");
+    ValidadorUtil.validarObjetoNaoNulo(cmd, LABEL_DADOS_LOGIN);
+    ValidadorUtil.validarTextoObrigatorio(cmd.getCpf(), LABEL_CPF);
+    ValidadorUtil.validarTextoObrigatorio(cmd.getSenha(), LABEL_SENHA);
   }
 
+  /**
+   * Valida os campos obrigatórios do comando de atualização.
+   *
+   * @param cmd
+   *        O comando a ser validado.
+   */
   private static void validarCmdAtualizar(AtualizarUsuarioCmd cmd) {
-    Assert.notNull(cmd, "Dados de atualização não podem ser nulos.");
-    validarId(cmd.getIdUsuario());
-    Assert.hasText(cmd.getNome(), "O nome é obrigatório.");
-    Assert.notNull(cmd.getDataNascimento(), "A data de nascimento é obrigatória.");
+    ValidadorUtil.validarObjetoNaoNulo(cmd, LABEL_DADOS_ATUALIZACAO);
+    ValidadorUtil.validarIdPositivo(cmd.getIdUsuario(), LABEL_ID_USUARIO);
+    ValidadorUtil.validarTextoObrigatorio(cmd.getNome(), LABEL_NOME);
+    ValidadorUtil.validarObjetoNaoNulo(cmd.getDataNascimento(), LABEL_DATA_NASCIMENTO);
   }
 }
