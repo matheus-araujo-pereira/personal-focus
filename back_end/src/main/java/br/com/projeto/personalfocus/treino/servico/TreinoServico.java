@@ -45,7 +45,7 @@ public class TreinoServico {
       return "Treino cadastrado com sucesso.";
     } catch (DataIntegrityViolationException e) {
       throw new IllegalArgumentException(
-          "Este aluno já possui um treino cadastrado para " + cmd.getDiaSemana().getDescricao());
+          "Este aluno já possui um treino cadastrado para " + cmd.getDiaSemana().getDescricao(), e);
     }
   }
 

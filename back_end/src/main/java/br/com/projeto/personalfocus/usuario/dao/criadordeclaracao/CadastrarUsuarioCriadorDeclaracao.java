@@ -14,6 +14,9 @@ import br.com.projeto.personalfocus.usuario.comando.CadastrarUsuarioCmd;
  * @author teteu
  */
 public class CadastrarUsuarioCriadorDeclaracao implements PreparedStatementCreator {
+
+  private static final String COLUNA_ID_USUARIO = "id_usuario";
+
   private String sql;
   private CadastrarUsuarioCmd cmd;
 
@@ -42,7 +45,7 @@ public class CadastrarUsuarioCriadorDeclaracao implements PreparedStatementCreat
    */
   @Override
   public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-    PreparedStatement ps = con.prepareStatement(sql, new String[] { "id_usuario" });
+    PreparedStatement ps = con.prepareStatement(sql, new String[] { COLUNA_ID_USUARIO });
     ps.setString(1, cmd.getCpf());
     ps.setString(2, cmd.getSenha());
     ps.setString(3, cmd.getNome());

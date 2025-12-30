@@ -1,10 +1,10 @@
 package br.com.projeto.personalfocus.usuario.dao;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +26,12 @@ import br.com.projeto.personalfocus.usuario.dto.UsuarioLogadoDto;
 @Repository
 @PropertySource("classpath:br/com/projeto/personalfocus/usuario/dao/UsuarioDao.properties")
 public class UsuarioDao {
+
+  private static final String COLUNA_ID_USUARIO = "id_usuario";
+  private static final String COLUNA_CPF = "cpf";
+  private static final String COLUNA_NOME = "nome";
+  private static final String COLUNA_PERFIL = "perfil";
+  private static final String COLUNA_DATA_NASCIMENTO = "data_nascimento";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -80,12 +86,10 @@ public class UsuarioDao {
    */
   @Transactional(readOnly = true)
   public UsuarioLogadoDto autenticar(LoginCmd cmd) {
-    try {
-      return jdbcTemplate.queryForObject(sqlLogin, new Object[] { cmd.getCpf(), cmd.getSenha() },
-          (rs, rowNum) -> new UsuarioLogadoDto(rs.getLong("id_usuario"), rs.getString("nome"), rs.getString("perfil")));
-    } catch (EmptyResultDataAccessException e) {
-      return null;
-    }
+    return jdbcTemplate.query(sqlLogin, new Object[] { cmd.getCpf(), cmd.getSenha() },
+        (rs, rowNum) -> new UsuarioLogadoDto(rs.getLong(COLUNA_ID_USUARIO), rs.getString(COLUNA_NOME),
+            rs.getString(COLUNA_PERFIL)))
+        .stream().findFirst().orElse(null);
   }
 
   /**
@@ -96,8 +100,8 @@ public class UsuarioDao {
   @Transactional(readOnly = true)
   public List<DadoUsuarioDto> listarAlunos() {
     return jdbcTemplate.query(sqlListarAlunos,
-        (rs, rowNum) -> new DadoUsuarioDto(rs.getLong("id_usuario"), rs.getString("cpf"), rs.getString("nome"),
-            rs.getString("perfil"), rs.getDate("data_nascimento").toLocalDate()));
+        (rs, rowNum) -> new DadoUsuarioDto(rs.getLong(COLUNA_ID_USUARIO), rs.getString(COLUNA_CPF),
+            rs.getString(COLUNA_NOME), rs.getString(COLUNA_PERFIL), rs.getDate(COLUNA_DATA_NASCIMENTO).toLocalDate()));
   }
 
   /**
@@ -137,13 +141,10 @@ public class UsuarioDao {
    */
   @Transactional(readOnly = true)
   public DadoUsuarioDto getUsuarioPorId(long idUsuario) {
-    try {
-      return jdbcTemplate.queryForObject(sqlGetPorId, new Object[] { idUsuario },
-          (rs, rowNum) -> new DadoUsuarioDto(rs.getLong("id_usuario"), rs.getString("cpf"), rs.getString("nome"),
-              rs.getString("perfil"), rs.getDate("data_nascimento").toLocalDate()));
-    } catch (EmptyResultDataAccessException e) {
-      return null;
-    }
+    return jdbcTemplate.query(sqlGetPorId, new Object[] { idUsuario },
+        (rs, rowNum) -> new DadoUsuarioDto(rs.getLong(COLUNA_ID_USUARIO), rs.getString(COLUNA_CPF),
+            rs.getString(COLUNA_NOME), rs.getString(COLUNA_PERFIL), rs.getDate(COLUNA_DATA_NASCIMENTO).toLocalDate()))
+        .stream().findFirst().orElse(null);
   }
 
   /**
@@ -155,10 +156,7 @@ public class UsuarioDao {
    * @return O ID do usuário se encontrado, ou null caso contrário.
    */
   public Long getUsuarioPorCpf(String cpf) {
-    try {
-      return jdbcTemplate.queryForObject(sqlGetPorCpf, new Object[] { cpf }, Long.class);
-    } catch (EmptyResultDataAccessException e) {
-      return null;
-    }
+    return jdbcTemplate.query(sqlGetPorCpf, new Object[] { cpf }, (rs, rowNum) -> rs.getLong(COLUNA_ID_USUARIO))
+        .stream().findFirst().orElse(null);
   }
 }
