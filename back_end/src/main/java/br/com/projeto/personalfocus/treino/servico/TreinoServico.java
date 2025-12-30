@@ -49,7 +49,6 @@ public class TreinoServico {
   public String cadastrarTreino(@Valid CadastrarTreinoCmd cmd) {
     validarCmdCadastrar(cmd);
     validarExistenciaAluno(cmd.getIdAluno());
-
     try {
       long idTreino = treinoDao.cadastrarTreino(cmd);
       treinoDao.cadastrarExerciciosBatch(idTreino, cmd.getListaExercicios());
@@ -97,7 +96,6 @@ public class TreinoServico {
   @Transactional
   public String atualizarTreino(@Valid AtualizarTreinoCmd cmd) {
     validarCmdAtualizarTreino(cmd);
-
     treinoDao.atualizarTreino(cmd);
     return "Treino atualizado com sucesso.";
   }
@@ -112,7 +110,6 @@ public class TreinoServico {
   @Transactional
   public String atualizarExercicio(@Valid AtualizarExercicioCmd cmd) {
     validarCmdAtualizarExercicio(cmd);
-
     treinoDao.atualizarExercicio(cmd);
     return "Exercício atualizado com sucesso.";
   }
@@ -150,8 +147,11 @@ public class TreinoServico {
     Assert.notNull(cmd.getDiaSemana(), "O dia da semana é obrigatório.");
     Assert.hasText(cmd.getNomeTreino(), "O nome do treino é obrigatório.");
     Assert.notEmpty(cmd.getListaExercicios(), "A lista de exercícios não pode estar vazia.");
+    validarTamanhoListaExercicios(cmd.getListaExercicios());
+  }
 
-    if (cmd.getListaExercicios().size() > 10) {
+  private static void validarTamanhoListaExercicios(List<?> listaExercicios) {
+    if (listaExercicios.size() > 10) {
       throw new IllegalArgumentException("O treino não pode ter mais de 10 exercícios.");
     }
   }

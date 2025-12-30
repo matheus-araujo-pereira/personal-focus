@@ -41,10 +41,9 @@ public class HistoricoServico {
   public String finalizarTreino(@Valid FinalizarTreinoCmd cmd) {
     validarCmdFinalizarTreino(cmd);
     validarExistenciaAluno(cmd.getIdAluno());
-
     try {
-      long id = historicoDao.registrarFinalizacao(cmd);
-      return "Treino finalizado com sucesso! Registro: " + id;
+      historicoDao.registrarFinalizacao(cmd);
+      return "Treino finalizado com sucesso!";
     } catch (DataIntegrityViolationException e) {
       throw new IllegalArgumentException("Não foi possível finalizar. Verifique se o ID do Treino é válido.", e);
     }
@@ -61,47 +60,39 @@ public class HistoricoServico {
    *         Caso o ID do aluno seja inválido ou o aluno não exista.
    */
   public List<HistoricoCalendarioDto> obterCalendarioAluno(long idAluno) {
-    if (idAluno <= 0) {
-      throw new IllegalArgumentException("O ID do aluno deve ser maior que zero.");
-    }
+    validarIdAluno(idAluno);
     validarExistenciaAluno(idAluno);
-
     return historicoDao.buscarHistoricoPorAluno(idAluno);
   }
 
-  /**
-   * Valida manualmente os campos obrigatórios do comando de finalização.
-   * Garante que as mensagens de erro sejam claras antes de acessar o banco.
-   *
-   * @param cmd
-   *        O comando a ser validado.
-   */
   private static void validarCmdFinalizarTreino(FinalizarTreinoCmd cmd) {
     Assert.notNull(cmd, "Os dados da finalização não podem ser nulos.");
     Assert.notNull(cmd.getIdAluno(), "ID do Aluno é obrigatório.");
     Assert.notNull(cmd.getIdTreino(), "ID do Treino é obrigatório.");
+    validarIdAluno(cmd.getIdAluno());
+    validarIdTreino(cmd.getIdTreino());
+  }
 
-    if (cmd.getIdAluno() <= 0) {
+  private static void validarIdAluno(long idAluno) {
+    if (idAluno <= 0) {
       throw new IllegalArgumentException("ID do Aluno inválido.");
     }
+  }
 
-    if (cmd.getIdTreino() <= 0) {
+  private static void validarIdTreino(long idTreino) {
+    if (idTreino <= 0) {
       throw new IllegalArgumentException("ID do Treino inválido.");
     }
   }
 
-  /**
-   * Verifica se o aluno existe na base de dados.
-   *
-   * @param idAluno
-   *        O ID do aluno.
-   * @throws IllegalArgumentException
-   *         Se o aluno não for encontrado.
-   */
   private void validarExistenciaAluno(long idAluno) {
     DadoUsuarioDto aluno = usuarioDao.getUsuarioPorId(idAluno);
+    validarAluno(aluno);
+  }
+
+  private static void validarAluno(DadoUsuarioDto aluno) {
     if (aluno == null) {
-      throw new IllegalArgumentException("Aluno não encontrado com o ID: " + idAluno);
+      throw new IllegalArgumentException("Aluno não encontrado.");
     }
   }
 }
