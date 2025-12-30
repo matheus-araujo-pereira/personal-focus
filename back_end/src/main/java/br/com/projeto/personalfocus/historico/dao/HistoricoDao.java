@@ -23,6 +23,9 @@ import br.com.projeto.personalfocus.historico.dto.HistoricoCalendarioDto;
 @PropertySource("classpath:br/com/projeto/personalfocus/historico/dao/HistoricoDao.properties")
 public class HistoricoDao {
 
+  private static final String COLUNA_DATA_FINALIZACAO = "data_finalizacao";
+  private static final String COLUNA_NOME_TREINO = "nome_treino";
+
   @Autowired
   private JdbcTemplate jdbcTemplate;
 
@@ -58,7 +61,7 @@ public class HistoricoDao {
   @Transactional(readOnly = true)
   public List<HistoricoCalendarioDto> buscarHistoricoPorAluno(long idAluno) {
     return jdbcTemplate.query(sqlBuscarPorAluno, new Object[] { idAluno },
-        (rs, rowNum) -> new HistoricoCalendarioDto(rs.getDate("data_finalizacao").toLocalDate(),
-            rs.getString("nome_treino")));
+        (rs, rowNum) -> new HistoricoCalendarioDto(rs.getDate(COLUNA_DATA_FINALIZACAO).toLocalDate(),
+            rs.getString(COLUNA_NOME_TREINO)));
   }
 }

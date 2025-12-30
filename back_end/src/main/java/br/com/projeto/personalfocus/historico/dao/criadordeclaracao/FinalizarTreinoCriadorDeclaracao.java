@@ -15,6 +15,9 @@ import br.com.projeto.personalfocus.historico.comando.FinalizarTreinoCmd;
  * @author teteu
  */
 public class FinalizarTreinoCriadorDeclaracao implements PreparedStatementCreator {
+
+  private static final String COLUNA_ID_HISTORICO = "id_historico";
+
   private String sql;
   private FinalizarTreinoCmd cmd;
 
@@ -43,7 +46,7 @@ public class FinalizarTreinoCriadorDeclaracao implements PreparedStatementCreato
    */
   @Override
   public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-    PreparedStatement ps = con.prepareStatement(sql, new String[] { "id_historico" });
+    PreparedStatement ps = con.prepareStatement(sql, new String[] { COLUNA_ID_HISTORICO });
     Date dataSql = (cmd.getDataFinalizacao() != null) ? Date.valueOf(cmd.getDataFinalizacao())
         : new Date(System.currentTimeMillis());
 
