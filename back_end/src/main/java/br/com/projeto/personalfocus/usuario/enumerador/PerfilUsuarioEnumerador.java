@@ -51,8 +51,9 @@ public enum PerfilUsuarioEnumerador {
    */
   @JsonCreator
   public static PerfilUsuarioEnumerador converter(String valor) {
-    if (valor == null)
+    if (valor == null) {
       return null;
+    }
 
     return Arrays.stream(PerfilUsuarioEnumerador.values())
         .filter(e -> e.sigla.equalsIgnoreCase(valor) || e.name().equalsIgnoreCase(valor)).findFirst().orElse(null);
