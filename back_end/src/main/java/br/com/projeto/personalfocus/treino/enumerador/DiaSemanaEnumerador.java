@@ -4,6 +4,11 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+/**
+ * Enumerador que representa os dias da semana disponíveis para agendamento de treinos.
+ *
+ * @author teteu
+ */
 public enum DiaSemanaEnumerador {
   DOMINGO("DOMINGO", "Domingo"), SEGUNDA("SEGUNDA", "Segunda-feira"), TERCA("TERCA", "Terça-feira"),
   QUARTA("QUARTA", "Quarta-feira"), QUINTA("QUINTA", "Quinta-feira"), SEXTA("SEXTA", "Sexta-feira"),
@@ -17,15 +22,32 @@ public enum DiaSemanaEnumerador {
     this.descricao = descricao;
   }
 
+  /**
+   * Obtém o código do dia da semana, utilizado para serialização JSON e persistência.
+   *
+   * @return O código do dia.
+   */
   @JsonValue
   public String getCodigo() {
     return codigo;
   }
 
+  /**
+   * Obtém a descrição legível do dia da semana.
+   *
+   * @return A descrição do dia.
+   */
   public String getDescricao() {
     return descricao;
   }
 
+  /**
+   * Converte uma string (código ou nome) para a instância correspondente do enumerador.
+   *
+   * @param valor
+   *        A string representando o dia da semana.
+   * @return A instância de DiaSemanaEnumerador correspondente ou null se não encontrada.
+   */
   @JsonCreator
   public static DiaSemanaEnumerador converter(String valor) {
     if (valor == null)

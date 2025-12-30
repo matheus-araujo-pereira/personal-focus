@@ -13,6 +13,12 @@ import br.com.projeto.personalfocus.historico.comando.FinalizarTreinoCmd;
 import br.com.projeto.personalfocus.historico.dao.criadordeclaracao.FinalizarTreinoCriadorDeclaracao;
 import br.com.projeto.personalfocus.historico.dto.HistoricoCalendarioDto;
 
+/**
+ * Componente de acesso a dados (DAO) para a entidade Histórico de Treino.
+ * Executa operações de persistência e consulta relacionadas ao histórico de atividades dos alunos.
+ *
+ * @author teteu
+ */
 @Repository
 @PropertySource("classpath:br/com/projeto/personalfocus/historico/dao/HistoricoDao.properties")
 public class HistoricoDao {
@@ -25,15 +31,30 @@ public class HistoricoDao {
 
   @Value("${insert.historicoDao.finalizarTreino}")
   private String sqlFinalizar;
-  
+
   @Value("${select.historicoDao.buscarPorAluno}")
   private String sqlBuscarPorAluno;
 
+  /**
+   * Insere um novo registro de treino finalizado na tabela de histórico.
+   *
+   * @param cmd
+   *        Objeto contendo os dados do treino finalizado.
+   * @return O ID do registro de histórico inserido.
+   */
   @Transactional
   public long registrarFinalizacao(FinalizarTreinoCmd cmd) {
     return daoUtilComponente.insertRecuperandoId(jdbcTemplate, new FinalizarTreinoCriadorDeclaracao(sqlFinalizar, cmd));
   }
 
+  /**
+   * Busca todos os registros de histórico de um determinado aluno.
+   * Realiza uma junção com a tabela de treinos para retornar também o nome do treino.
+   *
+   * @param idAluno
+   *        O identificador do aluno.
+   * @return Lista de DTOs contendo a data da finalização e o nome do treino.
+   */
   @Transactional(readOnly = true)
   public List<HistoricoCalendarioDto> buscarHistoricoPorAluno(long idAluno) {
     return jdbcTemplate.query(sqlBuscarPorAluno, new Object[] { idAluno },

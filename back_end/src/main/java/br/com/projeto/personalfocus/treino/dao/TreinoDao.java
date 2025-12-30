@@ -17,6 +17,12 @@ import br.com.projeto.personalfocus.treino.dao.criadordeclaracao.CadastrarTreino
 import br.com.projeto.personalfocus.treino.dto.DadoExercicioDto;
 import br.com.projeto.personalfocus.treino.dto.DadoTreinoDto;
 
+/**
+ * Componente de acesso a dados (DAO) para as entidades Treino e Exercício.
+ * Responsável por executar as operações de banco de dados definidas no arquivo de propriedades.
+ *
+ * @author teteu
+ */
 @Repository
 @PropertySource("classpath:br/com/projeto/personalfocus/treino/dao/TreinoDao.properties")
 public class TreinoDao {
@@ -51,12 +57,27 @@ public class TreinoDao {
   @Value("${delete.treinoDao.excluirExercicio}")
   private String sqlExcluirExercicio;
 
+  /**
+   * Insere um novo treino no banco de dados e retorna o ID gerado.
+   *
+   * @param cmd
+   *        Objeto contendo os dados do treino.
+   * @return O ID do treino inserido.
+   */
   @Transactional
   public long cadastrarTreino(CadastrarTreinoCmd cmd) {
     return daoUtilComponente.insertRecuperandoId(jdbcTemplate,
         new CadastrarTreinoCriadorDeclaracao(sqlCadastrarTreino, cmd));
   }
 
+  /**
+   * Insere uma lista de exercícios vinculados a um treino em lote (não utiliza batch do JDBC, mas itera sobre a lista).
+   *
+   * @param idTreino
+   *        O ID do treino ao qual os exercícios pertencem.
+   * @param exercicios
+   *        Lista de comandos de cadastro de exercício.
+   */
   @Transactional
   public void cadastrarExerciciosBatch(long idTreino, List<CadastrarExercicioCmd> exercicios) {
     for (CadastrarExercicioCmd ex : exercicios) {
@@ -64,6 +85,13 @@ public class TreinoDao {
     }
   }
 
+  /**
+   * Recupera a lista de treinos de um aluno.
+   *
+   * @param idAluno
+   *        O ID do aluno.
+   * @return Lista de DTOs com informações resumidas dos treinos.
+   */
   @Transactional(readOnly = true)
   public List<DadoTreinoDto> listarTreinosPorAluno(long idAluno) {
     return jdbcTemplate.query(sqlListarPorAluno, new Object[] { idAluno },
@@ -71,6 +99,13 @@ public class TreinoDao {
             rs.getString("dia_semana"), rs.getString("descricao"), rs.getInt("qtd_exercicios")));
   }
 
+  /**
+   * Recupera a lista de exercícios de um treino.
+   *
+   * @param idTreino
+   *        O ID do treino.
+   * @return Lista de DTOs com detalhes dos exercícios.
+   */
   @Transactional(readOnly = true)
   public List<DadoExercicioDto> listarExerciciosPorTreino(long idTreino) {
     return jdbcTemplate.query(sqlListarExercicios, new Object[] { idTreino },
@@ -78,22 +113,46 @@ public class TreinoDao {
             rs.getString("repeticoes"), rs.getBigDecimal("carga_kg")));
   }
 
+  /**
+   * Atualiza os dados de um treino no banco de dados.
+   *
+   * @param cmd
+   *        Objeto contendo os dados atualizados do treino.
+   */
   @Transactional
   public void atualizarTreino(AtualizarTreinoCmd cmd) {
     jdbcTemplate.update(sqlAtualizarTreino, cmd.getNomeTreino(), cmd.getDescricao(), cmd.getIdTreino());
   }
 
+  /**
+   * Atualiza os dados de um exercício no banco de dados.
+   *
+   * @param cmd
+   *        Objeto contendo os dados atualizados do exercício.
+   */
   @Transactional
   public void atualizarExercicio(AtualizarExercicioCmd cmd) {
     jdbcTemplate.update(sqlAtualizarExercicio, cmd.getNomeExercicio(), cmd.getRepeticoes(), cmd.getCargaKg(),
         cmd.getIdExercicio());
   }
 
+  /**
+   * Remove um treino do banco de dados.
+   *
+   * @param idTreino
+   *        O ID do treino a ser removido.
+   */
   @Transactional
   public void excluirTreino(long idTreino) {
     jdbcTemplate.update(sqlExcluirTreino, idTreino);
   }
 
+  /**
+   * Remove um exercício do banco de dados.
+   *
+   * @param idExercicio
+   *        O ID do exercício a ser removido.
+   */
   @Transactional
   public void excluirExercicio(long idExercicio) {
     jdbcTemplate.update(sqlExcluirExercicio, idExercicio);
