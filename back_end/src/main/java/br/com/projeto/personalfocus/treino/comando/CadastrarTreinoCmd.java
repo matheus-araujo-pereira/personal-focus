@@ -2,6 +2,7 @@ package br.com.projeto.personalfocus.treino.comando;
 
 import java.util.List;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import br.com.projeto.personalfocus.treino.enumerador.DiaSemanaEnumerador;
@@ -27,7 +28,7 @@ public class CadastrarTreinoCmd {
   /**
    * Nome descritivo do treino (ex: Treino A - Peito). Campo obrigatório.
    */
-  @NotNull(message = "Nome do treino é obrigatório")
+  @NotBlank(message = "Nome do treino é obrigatório")
   private String nomeTreino;
 
   /**

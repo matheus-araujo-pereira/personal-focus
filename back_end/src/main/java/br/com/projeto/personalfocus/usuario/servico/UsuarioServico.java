@@ -36,9 +36,8 @@ public class UsuarioServico {
    *         Caso o CPF informado já esteja cadastrado.
    */
   public String cadastrarUsuario(@Valid CadastrarUsuarioCmd cmd) {
-    if (cpfJaCadastrado(cmd.getCpf())) {
-      throw new IllegalArgumentException("CPF já cadastrado no sistema.");
-    }
+    validarCmdCadastrar(cmd);
+    validarCpfJaCadastrado(cmd.getCpf());
     long id = usuarioDao.cadastrarUsuario(cmd);
     return "Usuário cadastrado com sucesso. ID: " + id;
   }
@@ -54,6 +53,7 @@ public class UsuarioServico {
    *         Caso as credenciais sejam inválidas.
    */
   public UsuarioLogadoDto login(@Valid LoginCmd cmd) {
+    validarCmdLogin(cmd);
     UsuarioLogadoDto usuario = usuarioDao.autenticar(cmd);
     Assert.notNull(usuario, "CPF ou Senha inválidos.");
     return usuario;
@@ -77,6 +77,8 @@ public class UsuarioServico {
    * @return Uma mensagem de confirmação da atualização.
    */
   public String atualizarUsuario(@Valid AtualizarUsuarioCmd cmd) {
+    validarCmdAtualizar(cmd);
+    validarExistenciaUsuario(cmd.getIdUsuario());
     usuarioDao.atualizarUsuario(cmd);
     return "Dados do usuário atualizados com sucesso.";
   }
@@ -90,6 +92,8 @@ public class UsuarioServico {
    * @return Uma mensagem de confirmação da exclusão.
    */
   public String excluirUsuario(long idUsuario) {
+    validarId(idUsuario);
+    validarExistenciaUsuario(idUsuario);
     usuarioDao.excluirUsuario(idUsuario);
     return "Usuário e todos os seus dados vinculados foram removidos.";
   }
@@ -104,12 +108,55 @@ public class UsuarioServico {
    *         Caso o usuário não seja encontrado.
    */
   public DadoUsuarioDto obterPerfil(long idUsuario) {
+    validarId(idUsuario);
     DadoUsuarioDto usuario = usuarioDao.getUsuarioPorId(idUsuario);
-    Assert.notNull(usuario, "Usuário não encontrado.");
+    validarUsuario(usuario);
     return usuario;
   }
 
-  private boolean cpfJaCadastrado(String cpf) {
-    return usuarioDao.getUsuarioPorCpf(cpf) != null;
+  private void validarCpfJaCadastrado(String cpf) {
+    if (usuarioDao.getUsuarioPorCpf(cpf) != null) {
+      throw new IllegalArgumentException("CPF já cadastrado no sistema.");
+    }
+  }
+
+  private static void validarId(long id) {
+    if (id <= 0) {
+      throw new IllegalArgumentException("ID de usuário inválido.");
+    }
+  }
+
+  private static void validarUsuario(DadoUsuarioDto usuario) {
+    if (usuario == null) {
+      throw new IllegalArgumentException("Usuário não encontrado.");
+    }
+  }
+
+  private void validarExistenciaUsuario(long idUsuario) {
+    if (usuarioDao.getUsuarioPorId(idUsuario) == null) {
+      throw new IllegalArgumentException("Operação não realizada: Usuário não encontrado.");
+    }
+  }
+
+  private static void validarCmdCadastrar(CadastrarUsuarioCmd cmd) {
+    Assert.notNull(cmd, "Dados de cadastro não podem ser nulos.");
+    Assert.hasText(cmd.getCpf(), "O CPF é obrigatório.");
+    Assert.hasText(cmd.getNome(), "O nome é obrigatório.");
+    Assert.hasText(cmd.getSenha(), "A senha é obrigatória.");
+    Assert.notNull(cmd.getDataNascimento(), "A data de nascimento é obrigatória.");
+    Assert.notNull(cmd.getPerfil(), "O perfil é obrigatório.");
+  }
+
+  private static void validarCmdLogin(LoginCmd cmd) {
+    Assert.notNull(cmd, "Dados de login não podem ser nulos.");
+    Assert.hasText(cmd.getCpf(), "O CPF é obrigatório para login.");
+    Assert.hasText(cmd.getSenha(), "A senha é obrigatória para login.");
+  }
+
+  private static void validarCmdAtualizar(AtualizarUsuarioCmd cmd) {
+    Assert.notNull(cmd, "Dados de atualização não podem ser nulos.");
+    validarId(cmd.getIdUsuario());
+    Assert.hasText(cmd.getNome(), "O nome é obrigatório.");
+    Assert.notNull(cmd.getDataNascimento(), "A data de nascimento é obrigatória.");
   }
 }
