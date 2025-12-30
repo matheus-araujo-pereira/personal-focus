@@ -14,7 +14,6 @@ public enum PerfilUsuarioEnumerador {
   PERSONAL("PERSONAL", "Personal Trainer"), ALUNO("ALUNO", "Aluno");
 
   private String sigla;
-
   private String descricao;
 
   PerfilUsuarioEnumerador(String sigla, String descricao) {
@@ -42,8 +41,8 @@ public enum PerfilUsuarioEnumerador {
   }
 
   /**
-   * Converte uma string recebida (sigla ou nome) para a instância correspondente do enumerador.
-   * Método utilizado pelo Jackson durante a desserialização.
+   * Converte uma string recebida (sigla) para a instância correspondente do enumerador.
+   * Utiliza apenas a sigla para conversão, pois ela é o identificador único.
    *
    * @param valor
    *        A string representando o perfil.
@@ -55,7 +54,7 @@ public enum PerfilUsuarioEnumerador {
       return null;
     }
 
-    return Arrays.stream(PerfilUsuarioEnumerador.values())
-        .filter(e -> e.sigla.equalsIgnoreCase(valor) || e.name().equalsIgnoreCase(valor)).findFirst().orElse(null);
+    return Arrays.stream(PerfilUsuarioEnumerador.values()).filter(e -> e.sigla.equalsIgnoreCase(valor)).findFirst()
+        .orElse(null);
   }
 }

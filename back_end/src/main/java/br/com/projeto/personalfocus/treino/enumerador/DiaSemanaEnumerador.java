@@ -42,7 +42,8 @@ public enum DiaSemanaEnumerador {
   }
 
   /**
-   * Converte uma string (código ou nome) para a instância correspondente do enumerador.
+   * Converte uma string (código) para a instância correspondente do enumerador.
+   * Utiliza apenas o código para conversão, pois ele é o identificador único.
    *
    * @param valor
    *        A string representando o dia da semana.
@@ -50,10 +51,11 @@ public enum DiaSemanaEnumerador {
    */
   @JsonCreator
   public static DiaSemanaEnumerador converter(String valor) {
-    if (valor == null)
+    if (valor == null) {
       return null;
+    }
 
-    return Arrays.stream(DiaSemanaEnumerador.values())
-        .filter(e -> e.codigo.equalsIgnoreCase(valor) || e.name().equalsIgnoreCase(valor)).findFirst().orElse(null);
+    return Arrays.stream(DiaSemanaEnumerador.values()).filter(e -> e.codigo.equalsIgnoreCase(valor)).findFirst()
+        .orElse(null);
   }
 }
